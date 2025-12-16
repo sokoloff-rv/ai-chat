@@ -36,7 +36,7 @@ class WidgetController extends Controller
         return response()->json([
             'name' => e($chat->name),
             'welcome_message' => 'Привет! Чем могу помочь?',
-            'allowed_domains' => $chat->allowed_domains,
+            'allowed_domains' => $chat->getAllowedDomainsList(),
         ]);
     }
 
@@ -154,7 +154,7 @@ class WidgetController extends Controller
             ]);
 
             return response()->json([
-                'error' => 'Произошла ошибка при обработке запроса: ' . $e->getMessage(),
+                'error' => 'Произошла внутренняя ошибка сервера. Пожалуйста, попробуйте позже.',
             ], 500);
         }
     }
@@ -200,7 +200,7 @@ class WidgetController extends Controller
     private function isAllowedDomain(Chat $chat, Request $request): bool
     {
         return $this->domainValidator->isAllowed(
-            $chat->allowed_domains,
+            $chat->getAllowedDomainsList(),
             $request->header('Referer')
         );
     }

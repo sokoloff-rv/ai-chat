@@ -6,6 +6,7 @@ use App\Models\Chat;
 use App\Models\User;
 use App\Models\Visitor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
 
@@ -178,5 +179,57 @@ class WidgetSecurityTest extends TestCase
 
         $this->assertStringNotContainsString('<script>', $name);
         $this->assertStringContainsString('&lt;script&gt;', $name);
+    }
+
+    public function test_works_with_legacy_allowed_domains_data(): void
+    {
+        DB::table('chats')
+            ->where('id', $this->chat->id)
+            ->update(['allowed_domains' => "example.com\nlegacy.com"]);
+
+        $response = $this->getJson("/api/widget/{$this->chat->public_id}/config");
+        $response->assertStatus(200)
+            ->assertJson([
+                'allowed_domains' => ['example.com', 'legacy.com'],
+            ]);
+
+        $response = $this->postJson(
+            "/api/widget/{$this->chat->public_id}/session",
+            [],
+            ['Referer' => 'https://legacy.com/page']
+        );
+        $response->assertStatus(200);
+
+        $response = $this->postJson(
+            "/api/widget/{$this->chat->public_id}/session",
+            [],
+            ['Referer' => 'https://evil.com/page']
+        );
+        $response->assertStatus(403);
+    }
+
+    public function test_hides_system_error_details(): void
+    {
+        $this->mock(\App\Services\AI\AIService::class, function ($mock) {
+            $mock->shouldReceive('generateResponse')
+                ->andThrow(new \Exception('System database connection failed'));
+        });
+
+        $sessionResponse = $this->postJson("/api/widget/{$this->chat->public_id}/session");
+        $sessionId = $sessionResponse->json('session_id');
+
+        $response = $this->postJson("/api/widget/{$this->chat->public_id}/message", [
+            'session_id' => $sessionId,
+            'message' => 'Hello',
+        ]);
+
+        $response->assertStatus(500)
+            ->assertJson([
+                'error' => 'Произошла внутренняя ошибка сервера. Пожалуйста, попробуйте позже.',
+            ]);
+
+        $response->assertJsonMissing([
+            'message' => 'System database connection failed'
+        ]);
     }
 }

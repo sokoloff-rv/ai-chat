@@ -75,4 +75,26 @@ class Chat extends Model
     {
         return $this->hasMany(Message::class);
     }
+
+    public function getAllowedDomainsList(): array
+    {
+        $domains = $this->allowed_domains;
+
+        if (is_array($domains)) {
+            return $domains;
+        }
+
+        $raw = $this->getRawOriginal('allowed_domains');
+
+        if (empty($raw)) {
+            return [];
+        }
+
+        $decoded = json_decode($raw, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            return $decoded;
+        }
+
+        return array_filter(array_map('trim', explode("\n", $raw)));
+    }
 }
