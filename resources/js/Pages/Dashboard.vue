@@ -35,7 +35,7 @@ defineProps({
                 </div>
 
                 <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    <div class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-200">
+                    <div class="flex flex-col rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-200">
                         <div class="flex items-center">
                             <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100">
                                 <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,14 +47,16 @@ defineProps({
                                 <p class="text-2xl font-bold text-gray-900">{{ chatsCount }}</p>
                             </div>
                         </div>
-                        <div class="mt-4">
-                            <SecondaryButton :href="route('chats.index')" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                                Перейти к списку →
-                            </SecondaryButton>
+                        <div class="mt-auto">
+                            <Link :href="route('chats.index')"">
+                                <SecondaryButton class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                                    Перейти к списку →
+                                </SecondaryButton>
+                            </Link>
                         </div>
                     </div>
 
-                    <div class="rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-200">
+                    <div class="flex flex-col rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-200">
                         <div class="flex items-center">
                             <div class="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100">
                                 <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,7 +68,7 @@ defineProps({
                                 <p class="text-lg font-semibold text-gray-900">Создать бота</p>
                             </div>
                         </div>
-                        <div class="mt-4">
+                        <div class="mt-auto">
                             <Link :href="route('chats.create')">
                                 <PrimaryButton class="bg-green-600 hover:bg-green-500 focus:bg-green-500 active:bg-green-700">
                                     Создать нового бота
