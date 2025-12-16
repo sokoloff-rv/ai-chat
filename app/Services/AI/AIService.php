@@ -80,10 +80,10 @@ class AIService
         $driver = config('services.ai.driver', 'mock');
 
         return match ($driver) {
-            'openai' => new OpenAIProvider(),
-            'openrouter' => new OpenRouterProvider(),
-            'gemini' => new GeminiProvider(),
-            default => new MockAIProvider(),
+            'openai' => app(OpenAIProvider::class),
+            'openrouter' => app(OpenRouterProvider::class),
+            'gemini' => app(GeminiProvider::class),
+            default => app(MockAIProvider::class),
         };
     }
 }

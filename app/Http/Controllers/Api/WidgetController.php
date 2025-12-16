@@ -228,7 +228,6 @@ class WidgetController extends Controller
     {
         $message = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $message);
         $message = preg_replace('/<style\b[^>]*>(.*?)<\/style>/is', '', $message);
-        $message = preg_replace('/on\w+\s*=\s*["\'].*?["\']/i', '', $message);
         $message = strip_tags($message);
 
         return trim($message);
