@@ -46,6 +46,10 @@ class Chat extends Model
         'allowed_domains',
     ];
 
+    protected $casts = [
+        'allowed_domains' => 'array',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
