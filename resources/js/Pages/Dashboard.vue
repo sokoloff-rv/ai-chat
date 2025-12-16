@@ -24,7 +24,7 @@ defineProps({
         </template>
 
         <div class="py-12">
-            <div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="mb-8 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 p-8 text-white shadow-lg">
                     <h1 class="text-2xl font-bold">
                         Добро пожаловать, {{ $page.props.auth.user.name }}!
@@ -47,7 +47,7 @@ defineProps({
                                 <p class="text-2xl font-bold text-gray-900">{{ chatsCount }}</p>
                             </div>
                         </div>
-                        <div class="mt-auto">
+                        <div class="mt-4">
                             <Link :href="route('chats.index')"">
                                 <SecondaryButton class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
                                     Перейти к списку →
@@ -68,7 +68,7 @@ defineProps({
                                 <p class="text-lg font-semibold text-gray-900">Создать бота</p>
                             </div>
                         </div>
-                        <div class="mt-auto">
+                        <div class="mt-4">
                             <Link :href="route('chats.create')">
                                 <PrimaryButton class="bg-green-600 hover:bg-green-500 focus:bg-green-500 active:bg-green-700">
                                     Создать нового бота
