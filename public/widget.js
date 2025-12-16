@@ -181,6 +181,37 @@
             word-wrap: break-word;
         }
 
+        .message strong {
+            font-weight: 600;
+        }
+
+        .message em {
+            font-style: italic;
+        }
+
+        .message a {
+            color: inherit;
+            text-decoration: underline;
+        }
+
+        .message.user a {
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .message.assistant a {
+            color: #667eea;
+        }
+
+        .message ul,
+        .message ol {
+            margin: 8px 0;
+            padding-left: 20px;
+        }
+
+        .message li {
+            margin: 4px 0;
+        }
+
         .message.user {
             align-self: flex-end;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -438,10 +469,77 @@
         }
     }
 
+    function parseMarkdown(text) {
+        let result = text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+        result = result.replace(/\*\*\*([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
+        result = result.replace(/___([^_]+)___/g, '<strong><em>$1</em></strong>');
+        result = result.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        result = result.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+        result = result.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+        result = result.replace(/_([^_]+)_/g, '<em>$1</em>');
+
+        const lines = result.split('\n');
+        let inList = false;
+        let listType = null;
+        const processedLines = [];
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const ulMatch = line.match(/^[\s]*[-*]\s+(.+)$/);
+            const olMatch = line.match(/^[\s]*\d+\.\s+(.+)$/);
+
+            if (ulMatch) {
+                if (!inList || listType !== 'ul') {
+                    if (inList) processedLines.push(`</${listType}>`);
+                    processedLines.push('<ul>');
+                    listType = 'ul';
+                    inList = true;
+                }
+                processedLines.push(`<li>${ulMatch[1]}</li>`);
+            } else if (olMatch) {
+                if (!inList || listType !== 'ol') {
+                    if (inList) processedLines.push(`</${listType}>`);
+                    processedLines.push('<ol>');
+                    listType = 'ol';
+                    inList = true;
+                }
+                processedLines.push(`<li>${olMatch[1]}</li>`);
+            } else {
+                if (inList) {
+                    processedLines.push(`</${listType}>`);
+                    inList = false;
+                    listType = null;
+                }
+                processedLines.push(line);
+            }
+        }
+
+        if (inList) {
+            processedLines.push(`</${listType}>`);
+        }
+
+        result = processedLines.join('\n');
+
+        result = result.replace(/\n(?![<])/g, '<br>');
+
+        return result;
+    }
+
     function addMessage(content, role) {
         const messageDiv = document.createElement('div');
         messageDiv.className = `message ${role}`;
-        messageDiv.textContent = content;
+
+        if (role === 'assistant' || role === 'user') {
+            messageDiv.innerHTML = parseMarkdown(content);
+        } else {
+            messageDiv.textContent = content;
+        }
+
         messagesContainer.appendChild(messageDiv);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
