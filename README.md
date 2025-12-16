@@ -81,3 +81,20 @@
     ```bash
     php artisan serve
     ```
+
+7.  **Запуск тестов:**
+    ```bash
+    php artisan test
+    ```
+
+    Для корректного выполнения тестов необходимо предварительно настроить подключение к тестовой базе данных в файле phpunit.xml. 
+    
+    Пример конфигурации:
+
+    ```text
+    <env name="DB_HOST" value="localhost"/>
+    <env name="DB_PORT" value="3306"/>
+    <env name="DB_DATABASE" value="test_database_name"/>
+    <env name="DB_USERNAME" value="user"/>
+    <env name="DB_PASSWORD" value="password"/>
+    ```
