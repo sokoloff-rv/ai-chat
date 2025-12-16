@@ -19,6 +19,8 @@ return new class extends Migration
             $table->text('user_instruction')->nullable();
             $table->text('allowed_domains')->nullable();
             $table->timestamps();
+
+            $table->index(['user_id', 'created_at']);
         });
     }
 

@@ -6,14 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\Chat;
 use App\Models\Message;
 use App\Services\AI\AIService;
+use App\Services\DomainValidator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 
 class WidgetController extends Controller
 {
     public function __construct(
-        private AIService $aiService
+        private AIService $aiService,
+        private DomainValidator $domainValidator
     ) {}
 
     /**
@@ -21,7 +25,7 @@ class WidgetController extends Controller
      */
     public function config(string $publicId): JsonResponse
     {
-        $chat = Chat::where('public_id', $publicId)->first();
+        $chat = $this->findChatByPublicId($publicId);
 
         if (!$chat) {
             return response()->json([
@@ -30,7 +34,7 @@ class WidgetController extends Controller
         }
 
         return response()->json([
-            'name' => $chat->name,
+            'name' => e($chat->name),
             'welcome_message' => 'Привет! Чем могу помочь?',
             'allowed_domains' => $chat->allowed_domains,
         ]);
@@ -41,7 +45,15 @@ class WidgetController extends Controller
      */
     public function startSession(Request $request, string $publicId): JsonResponse
     {
-        $chat = Chat::where('public_id', $publicId)->first();
+        $key = 'session:' . $request->ip();
+        if (RateLimiter::tooManyAttempts($key, 10)) {
+            return response()->json([
+                'error' => 'Слишком много запросов. Попробуйте позже.',
+            ], 429);
+        }
+        RateLimiter::hit($key, 60);
+
+        $chat = $this->findChatByPublicId($publicId);
 
         if (!$chat) {
             return response()->json([
@@ -56,15 +68,15 @@ class WidgetController extends Controller
         }
 
         $visitor = $chat->visitors()->create([
-            'session_id' => bin2hex(random_bytes(16)),
+            'session_id' => Str::uuid()->toString(),
             'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'referrer' => $request->header('Referer'),
+            'user_agent' => substr($request->userAgent() ?? '', 0, 500),
+            'referrer' => substr($request->header('Referer') ?? '', 0, 500),
         ]);
 
         return response()->json([
             'session_id' => $visitor->session_id,
-            'chat_name' => $chat->name,
+            'chat_name' => e($chat->name),
         ]);
     }
 
@@ -74,11 +86,19 @@ class WidgetController extends Controller
     public function sendMessage(Request $request, string $publicId): JsonResponse
     {
         $request->validate([
-            'session_id' => 'required|string',
+            'session_id' => 'required|string|uuid',
             'message' => 'required|string|max:2000',
         ]);
 
-        $chat = Chat::where('public_id', $publicId)->first();
+        $key = 'message:' . $request->session_id;
+        if (RateLimiter::tooManyAttempts($key, 20)) {
+            return response()->json([
+                'error' => 'Слишком много сообщений. Подождите минуту.',
+            ], 429);
+        }
+        RateLimiter::hit($key, 60);
+
+        $chat = $this->findChatByPublicId($publicId);
 
         if (!$chat) {
             return response()->json([
@@ -86,9 +106,7 @@ class WidgetController extends Controller
             ], 404);
         }
 
-        $visitor = $chat->visitors()
-            ->where('session_id', $request->session_id)
-            ->first();
+        $visitor = $this->findVisitorBySession($chat, $request->session_id);
 
         if (!$visitor) {
             return response()->json([
@@ -96,10 +114,12 @@ class WidgetController extends Controller
             ], 404);
         }
 
+        $sanitizedMessage = $this->sanitizeMessage($request->message);
+
         $userMessage = $visitor->messages()->create([
             'chat_id' => $chat->id,
             'role' => 'user',
-            'content' => $request->message,
+            'content' => $sanitizedMessage,
         ]);
 
         try {
@@ -145,10 +165,10 @@ class WidgetController extends Controller
     public function getHistory(Request $request, string $publicId): JsonResponse
     {
         $request->validate([
-            'session_id' => 'required|string',
+            'session_id' => 'required|string|uuid',
         ]);
 
-        $chat = Chat::where('public_id', $publicId)->first();
+        $chat = $this->findChatByPublicId($publicId);
 
         if (!$chat) {
             return response()->json([
@@ -156,9 +176,7 @@ class WidgetController extends Controller
             ], 404);
         }
 
-        $visitor = $chat->visitors()
-            ->where('session_id', $request->session_id)
-            ->first();
+        $visitor = $this->findVisitorBySession($chat, $request->session_id);
 
         if (!$visitor) {
             return response()->json([
@@ -181,33 +199,39 @@ class WidgetController extends Controller
      */
     private function isAllowedDomain(Chat $chat, Request $request): bool
     {
-        if (empty($chat->allowed_domains)) {
-            return true;
-        }
+        return $this->domainValidator->isAllowed(
+            $chat->allowed_domains,
+            $request->header('Referer')
+        );
+    }
 
-        $referer = $request->header('Referer');
-        if (!$referer) {
-            return false;
-        }
+    /**
+     * Находит чат по публичному ID.
+     */
+    private function findChatByPublicId(string $publicId): ?Chat
+    {
+        return Chat::where('public_id', $publicId)->first();
+    }
 
-        $refererHost = parse_url($referer, PHP_URL_HOST);
-        if (!$refererHost) {
-            return false;
-        }
+    /**
+     * Находит посетителя по ID сессии.
+     */
+    private function findVisitorBySession(Chat $chat, string $sessionId)
+    {
+        return $chat->visitors()->where('session_id', $sessionId)->first();
+    }
 
-        $allowedDomains = array_map('trim', explode("\n", $chat->allowed_domains));
+    /**
+     * Санитизирует сообщение для защиты от XSS.
+     */
+    private function sanitizeMessage(string $message): string
+    {
+        $message = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $message);
+        $message = preg_replace('/<style\b[^>]*>(.*?)<\/style>/is', '', $message);
+        $message = preg_replace('/on\w+\s*=\s*["\'].*?["\']/i', '', $message);
+        $message = strip_tags($message);
 
-        foreach ($allowedDomains as $domain) {
-            if (empty($domain)) {
-                continue;
-            }
-
-            if ($refererHost === $domain || str_ends_with($refererHost, '.' . $domain)) {
-                return true;
-            }
-        }
-
-        return false;
+        return trim($message);
     }
 
     /**

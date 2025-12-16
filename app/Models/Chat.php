@@ -50,6 +50,17 @@ class Chat extends Model
         'allowed_domains' => 'array',
     ];
 
+    protected static function booted(): void
+    {
+        static::saving(function ($chat) {
+            if (is_string($chat->allowed_domains)) {
+                $chat->allowed_domains = array_filter(
+                    array_map('trim', explode("\n", $chat->allowed_domains))
+                );
+            }
+        });
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

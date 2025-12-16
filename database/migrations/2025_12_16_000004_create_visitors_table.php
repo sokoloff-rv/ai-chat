@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('visitors', function (Blueprint $table) {
             $table->id();
             $table->foreignId('chat_id')->constrained('chats')->cascadeOnDelete();
-            $table->string('session_id', 64)->unique();
-            $table->string('user_agent')->nullable();
+            $table->uuid('session_id')->unique();
+            $table->string('user_agent', 500)->nullable();
             $table->string('ip_address', 45)->nullable();
-            $table->text('referrer')->nullable();
+            $table->string('referrer', 500)->nullable();
             $table->timestamps();
 
             $table->index('session_id');

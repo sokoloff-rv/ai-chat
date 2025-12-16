@@ -120,10 +120,7 @@ class WidgetControllerTest extends TestCase
             'message' => 'Привет!',
         ]);
 
-        $response->assertStatus(404)
-            ->assertJson([
-                'error' => 'Сессия не найдена',
-            ]);
+        $response->assertStatus(422);
     }
 
     public function test_domain_restriction_works(): void

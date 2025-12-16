@@ -26,11 +26,7 @@ class ChatFactory extends Factory
             'name' => fake()->words(3, true),
             'user_id' => User::factory(),
             'user_instruction' => fake()->optional()->paragraph(),
-            'allowed_domains' => fake()->optional()->randomElement([
-                null,
-                json_encode([fake()->domainName()]),
-                json_encode([fake()->domainName(), fake()->domainName()]),
-            ]),
+            'allowed_domains' => null,
         ];
     }
 
