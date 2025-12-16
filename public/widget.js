@@ -11,10 +11,25 @@
 
     const apiBaseUrl = currentScript.src.replace('/widget.js', '').replace(/\/+$/, '');
 
+    const storageKey = `ai_chat_session_${chatId}`;
     let sessionId = null;
     let isOpen = false;
     let isLoading = false;
     let chatConfig = null;
+
+    const savedSession = localStorage.getItem(storageKey);
+    if (savedSession) {
+        try {
+            const sessionData = JSON.parse(savedSession);
+            if (Date.now() - sessionData.timestamp < 24 * 60 * 60 * 1000) {
+                sessionId = sessionData.sessionId;
+            } else {
+                localStorage.removeItem(storageKey);
+            }
+        } catch (e) {
+            localStorage.removeItem(storageKey);
+        }
+    }
 
     const container = document.createElement('div');
     container.id = 'ai-chat-widget-container';
@@ -341,13 +356,49 @@
         return data;
     }
 
+    async function loadHistory() {
+        if (!sessionId) return;
+
+        try {
+            const response = await apiRequest(`/history?session_id=${sessionId}`);
+
+            if (response.messages && response.messages.length > 0) {
+                const welcomeMessage = messagesContainer.querySelector('.message.welcome');
+                messagesContainer.innerHTML = '';
+                if (welcomeMessage) {
+                    messagesContainer.appendChild(welcomeMessage);
+                }
+
+                response.messages.forEach(msg => {
+                    addMessage(msg.content, msg.role);
+                });
+            }
+        } catch (error) {
+            console.error('AI Chat Widget: Ошибка загрузки истории', error);
+            sessionId = null;
+            localStorage.removeItem(storageKey);
+        }
+    }
+
     async function initChat() {
         try {
             chatConfig = await apiRequest('/config');
             chatTitle.textContent = chatConfig.name || 'Чат';
 
+            if (sessionId) {
+                await loadHistory();
+                if (sessionId) {
+                    return;
+                }
+            }
+
             const sessionData = await apiRequest('/session', { method: 'POST' });
             sessionId = sessionData.session_id;
+
+            localStorage.setItem(storageKey, JSON.stringify({
+                sessionId: sessionId,
+                timestamp: Date.now(),
+            }));
 
         } catch (error) {
             console.error('AI Chat Widget: Ошибка инициализации', error);
@@ -426,11 +477,14 @@
         }
     }
 
+    let chatInitialized = false;
+
     function toggleWidget() {
         isOpen = !isOpen;
         widgetWindow.classList.toggle('open', isOpen);
 
-        if (isOpen && !sessionId) {
+        if (isOpen && !chatInitialized) {
+            chatInitialized = true;
             initChat();
         }
 
@@ -456,29 +510,4 @@
             toggleWidget();
         }
     });
-
-    const storageKey = `ai_chat_session_${chatId}`;
-
-    const savedSession = localStorage.getItem(storageKey);
-    if (savedSession) {
-        try {
-            const sessionData = JSON.parse(savedSession);
-            if (Date.now() - sessionData.timestamp < 24 * 60 * 60 * 1000) {
-                sessionId = sessionData.sessionId;
-            }
-        } catch (e) {
-            localStorage.removeItem(storageKey);
-        }
-    }
-
-    const originalInitChat = initChat;
-    initChat = async function() {
-        await originalInitChat();
-        if (sessionId) {
-            localStorage.setItem(storageKey, JSON.stringify({
-                sessionId: sessionId,
-                timestamp: Date.now(),
-            }));
-        }
-    };
 })();
