@@ -58,7 +58,7 @@ const submit = () => {
                             <TextInput id="name" v-model="form.name" type="text" class="mt-1 block w-full" placeholder="Например: Консультант магазина" required autofocus />
                             <InputError :message="form.errors.name" class="mt-2" />
                             <p class="mt-1 text-sm text-gray-500">
-                                Название для вашего удобства, посетители его не&nbsp;видят.
+                                Посетители видят название чата в&nbsp;бейдже.
                             </p>
                         </div>
 
@@ -81,7 +81,7 @@ const submit = () => {
                             </div>
                             <InputError :message="form.errors.allowed_domains" class="mt-2" />
                             <p class="mt-1 text-sm text-gray-500">
-                                Если не указано, бот будет доступен на всех доменах. Укажите домены без http:// и www.
+                                Если не&nbsp;указано, бот будет доступен на&nbsp;всех доменах. Указывайте домены без http:// и&nbsp;www.
                             </p>
                             <div v-if="form.allowed_domains.length > 0" class="mt-3 flex flex-wrap gap-2">
                                 <span v-for="(domain, index) in form.allowed_domains" :key="index" class="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-3 py-1 text-sm text-indigo-700">
