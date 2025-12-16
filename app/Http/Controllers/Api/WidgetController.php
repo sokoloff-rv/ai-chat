@@ -32,6 +32,7 @@ class WidgetController extends Controller
         return response()->json([
             'name' => $chat->name,
             'welcome_message' => 'Привет! Чем могу помочь?',
+            'allowed_domains' => $chat->allowed_domains,
         ]);
     }
 

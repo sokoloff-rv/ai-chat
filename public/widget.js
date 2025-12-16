@@ -16,6 +16,30 @@
     let isOpen = false;
     let isLoading = false;
     let chatConfig = null;
+    let domainCheckPassed = false;
+
+    function isAllowedDomain(allowedDomains) {
+        if (!allowedDomains || allowedDomains.length === 0) {
+            return true;
+        }
+
+        const currentHost = window.location.hostname;
+        const currentPath = window.location.pathname;
+
+        if (currentHost === apiBaseUrl.replace(/^https?:\/\//, '').split('/')[0]) {
+            if (currentPath.includes('/demo')) {
+                return true;
+            }
+        }
+
+        for (const domain of allowedDomains) {
+            if (currentHost === domain || currentHost.endsWith('.' + domain)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     const savedSession = localStorage.getItem(storageKey);
     if (savedSession) {
@@ -383,6 +407,14 @@
     async function initChat() {
         try {
             chatConfig = await apiRequest('/config');
+
+            if (!isAllowedDomain(chatConfig.allowed_domains)) {
+                console.warn('AI Chat Widget: Домен не разрешен для этого чат-бота');
+                container.remove();
+                return;
+            }
+
+            domainCheckPassed = true;
             chatTitle.textContent = chatConfig.name || 'Чат';
 
             if (sessionId) {
@@ -510,4 +542,16 @@
             toggleWidget();
         }
     });
+
+    (async function checkDomainOnLoad() {
+        try {
+            const config = await apiRequest('/config');
+            if (!isAllowedDomain(config.allowed_domains)) {
+                console.warn('AI Chat Widget: Домен не разрешен для этого чат-бота');
+                container.remove();
+            }
+        } catch (error) {
+            console.error('AI Chat Widget: Ошибка при проверке домена', error);
+        }
+    })();
 })();

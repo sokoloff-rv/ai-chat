@@ -6,11 +6,27 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const form = useForm({
     name: '',
     user_instruction: '',
+    allowed_domains: [],
 });
+
+const domainInput = ref('');
+
+const addDomain = () => {
+    const domain = domainInput.value.trim();
+    if (domain && !form.allowed_domains.includes(domain)) {
+        form.allowed_domains.push(domain);
+        domainInput.value = '';
+    }
+};
+
+const removeDomain = (index) => {
+    form.allowed_domains.splice(index, 1);
+};
 
 const submit = () => {
     form.post(route('chats.store'));
@@ -54,6 +70,30 @@ const submit = () => {
                                 Чем подробнее инструкции, тем точнее бот будет следовать вашим требованиям.
                             </p>
                         </div>
+
+                        <div>
+                            <InputLabel for="domains" value="Разрешённые домены (необязательно)" />
+                            <div class="mt-1 flex gap-2">
+                                <TextInput id="domains" v-model="domainInput" type="text" class="block w-full" placeholder="example.com" @keyup.enter="addDomain" />
+                                <PrimaryButton type="button" @click="addDomain">
+                                    Добавить
+                                </PrimaryButton>
+                            </div>
+                            <InputError :message="form.errors.allowed_domains" class="mt-2" />
+                            <p class="mt-1 text-sm text-gray-500">
+                                Если не указано, бот будет доступен на всех доменах. Укажите домены без http:// и www.
+                            </p>
+                            <div v-if="form.allowed_domains.length > 0" class="mt-3 flex flex-wrap gap-2">
+                                <span v-for="(domain, index) in form.allowed_domains" :key="index" class="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-3 py-1 text-sm text-indigo-700">
+                                    {{ domain }}
+                                    <button type="button" @click="removeDomain(index)" class="rounded-full hover:bg-indigo-200">
+                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="mt-8 flex items-center justify-end gap-4">
@@ -61,7 +101,7 @@ const submit = () => {
                             <SecondaryButton type="button">Отмена</SecondaryButton>
                         </Link>
                         <PrimaryButton class="bg-green-600 hover:bg-green-500 focus:bg-green-500 active:bg-green-700" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                            Создать бота
+                            Сохранить бота
                         </PrimaryButton>
                     </div>
                 </form>
