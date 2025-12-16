@@ -335,7 +335,7 @@
         @media (max-width: 480px) {
             .widget-window {
                 width: calc(100vw - 20px);
-                height: calc(100vh - 100px);
+                height: calc(100vh - 200px);
                 bottom: 80px;
                 right: 10px;
             }
