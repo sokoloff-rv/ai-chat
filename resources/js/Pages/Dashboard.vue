@@ -47,7 +47,7 @@ defineProps({
                                 <p class="text-2xl font-bold text-gray-900">{{ chatsCount }}</p>
                             </div>
                         </div>
-                        <div class="mt-4">
+                        <div class="mt-auto pt-4">
                             <Link :href="route('chats.index')"">
                                 <SecondaryButton class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
                                     Перейти к списку →
@@ -64,11 +64,11 @@ defineProps({
                                 </svg>
                             </div>
                             <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-500">Быстрое действие</p>
+                                <p class="text-sm font-medium text-gray-500">Легкий старт</p>
                                 <p class="text-lg font-semibold text-gray-900">Создать бота</p>
                             </div>
                         </div>
-                        <div class="mt-4">
+                        <div class="mt-auto pt-4">
                             <Link :href="route('chats.create')">
                                 <PrimaryButton class="bg-green-600 hover:bg-green-500 focus:bg-green-500 active:bg-green-700">
                                     Создать нового бота
