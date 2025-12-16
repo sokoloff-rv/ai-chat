@@ -9,7 +9,7 @@
         return;
     }
 
-    const apiBaseUrl = currentScript.src.replace('/widget.js', '');
+    const apiBaseUrl = currentScript.src.replace('/widget.js', '').replace(/\/+$/, '');
 
     let sessionId = null;
     let isOpen = false;
