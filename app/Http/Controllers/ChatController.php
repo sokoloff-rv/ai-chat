@@ -107,6 +107,18 @@ class ChatController extends Controller
     }
 
     /**
+     * Отображает демо-страницу виджета.
+     */
+    public function demo(Chat $chat): Response
+    {
+        $this->authorize('view', $chat);
+
+        return Inertia::render('Chats/Demo', [
+            'chat' => $chat,
+        ]);
+    }
+
+    /**
      * Генерирует HTML-код для встраивания виджета на сайт.
      */
     private function generateEmbedCode(Chat $chat): string

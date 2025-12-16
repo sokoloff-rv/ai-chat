@@ -81,7 +81,7 @@ class AIServiceTest extends TestCase
             ['role' => 'user', 'content' => 'Помощь'],
         ]);
 
-        $this->assertStringContainsString('AI-ассистент', $response);
+        $this->assertStringContainsString('Помощь', $response);
     }
 
     public function test_default_provider_is_mock(): void

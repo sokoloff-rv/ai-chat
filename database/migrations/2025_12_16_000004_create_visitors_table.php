@@ -12,11 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('visitors', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->id();
             $table->foreignId('chat_id')->constrained('chats')->cascadeOnDelete();
+            $table->string('session_id', 64)->unique();
             $table->string('user_agent')->nullable();
             $table->string('ip_address', 45)->nullable();
+            $table->text('referrer')->nullable();
             $table->timestamps();
+
+            $table->index('session_id');
         });
     }
 

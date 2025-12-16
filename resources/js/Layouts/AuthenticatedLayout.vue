@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue';
-import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import Dropdown from '@/Components/Dropdown.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
@@ -18,14 +17,22 @@ const showingNavigationDropdown = ref(false);
                     <div class="flex h-16 justify-between">
                         <div class="flex">
                             <div class="flex shrink-0 items-center">
-                                <Link :href="route('dashboard')">
-                                    <ApplicationLogo class="block h-9 w-auto fill-current text-gray-800" />
+                                <Link :href="route('dashboard')" class="flex items-center gap-2">
+                                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600">
+                                        <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                        </svg>
+                                    </div>
+                                    <span class="text-lg font-bold text-gray-900">AI Chat</span>
                                 </Link>
                             </div>
 
                             <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                                 <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Главная
+                                </NavLink>
+                                <NavLink :href="route('chats.index')" :active="route().current('chats.*')">
+                                    Чат-боты
                                 </NavLink>
                             </div>
                         </div>
@@ -86,6 +93,9 @@ const showingNavigationDropdown = ref(false);
                     <div class="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink :href="route('dashboard')" :active="route().current('dashboard')">
                             Главная
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('chats.index')" :active="route().current('chats.*')">
+                            Чат-боты
                         </ResponsiveNavLink>
                     </div>
 

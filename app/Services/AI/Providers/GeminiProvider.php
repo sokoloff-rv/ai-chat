@@ -17,7 +17,7 @@ class GeminiProvider implements AIProviderInterface
     public function __construct()
     {
         $this->apiKey = config('services.gemini.api_key', '');
-        $this->model = config('services.gemini.model', 'gemini-2.0-flash');
+        $this->model = config('services.gemini.model', 'gemini-2.5-flash');
         $this->maxTokens = config('services.gemini.max_tokens', 1000);
         $this->temperature = config('services.gemini.temperature', 0.7);
     }
@@ -124,7 +124,6 @@ class GeminiProvider implements AIProviderInterface
         $contents = [];
 
         foreach ($messages as $message) {
-            // Gemini использует 'model' вместо 'assistant'
             $role = $message['role'] === 'assistant' ? 'model' : 'user';
 
             $contents[] = [

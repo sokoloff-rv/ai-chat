@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
-            $table->uuid('visitor_id');
-            $table->string('role');
+            $table->foreignId('chat_id')->constrained('chats')->cascadeOnDelete();
+            $table->foreignId('visitor_id')->constrained('visitors')->cascadeOnDelete();
+            $table->enum('role', ['user', 'assistant']);
             $table->text('content');
-            $table->timestamp('created_at')->useCurrent();
+            $table->timestamps();
 
-            $table->foreign('visitor_id')->references('id')->on('visitors')->cascadeOnDelete();
+            $table->index(['visitor_id', 'created_at']);
         });
     }
 

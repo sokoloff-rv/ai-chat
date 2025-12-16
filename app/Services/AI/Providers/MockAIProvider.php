@@ -38,7 +38,7 @@ class MockAIProvider implements AIProviderInterface
 
         return $roleInfo . "Это тестовый ответ на ваше сообщение: \"{$this->truncate($userMessage, 100)}\"\n\n" .
             "В production-режиме здесь будет реальный ответ от AI. " .
-            "Для включения настоящего AI установите переменную окружения AI_DRIVER=openai";
+            "Для включения настоящего AI установите переменную окружения AI_DRIVER=gemini";
     }
 
     /**
