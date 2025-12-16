@@ -60,13 +60,13 @@ defineProps({
                         Начать бесплатно
                     </Link>
                     <Link v-if="canLogin" :href="route('login')" class="rounded-lg border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-700 shadow transition hover:bg-gray-50">
-                        Войти в аккаунт
+                        Войти в&nbsp;аккаунт
                     </Link>
                 </div>
 
                 <div v-else class="mt-10">
                     <Link :href="route('chats.index')" class="rounded-lg bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-lg transition hover:bg-indigo-700 hover:shadow-xl">
-                        Перейти к чат-ботам
+                        Перейти к&nbsp;чат-ботам
                     </Link>
                 </div>
             </div>
@@ -80,7 +80,7 @@ defineProps({
                     </div>
                     <h3 class="mt-4 text-lg font-semibold text-gray-900">Персональные инструкции</h3>
                     <p class="mt-2 text-gray-600">
-                        Задайте роль и поведение бота: фитнес-тренер, консультант магазина, техподдержка — всё, что угодно.
+                        Задайте роль и&nbsp;поведение бота: фитнес-тренер, консультант магазина, техподдержка&nbsp;&mdash; всё, что угодно.
                     </p>
                 </div>
 
@@ -92,7 +92,7 @@ defineProps({
                     </div>
                     <h3 class="mt-4 text-lg font-semibold text-gray-900">Простое встраивание</h3>
                     <p class="mt-2 text-gray-600">
-                        Один скрипт — и виджет появится на вашем сайте. Shadow DOM изолирует стили от конфликтов.
+                        Один скрипт&nbsp;&mdash; и&nbsp;виджет появится на&nbsp;вашем сайте. Shadow DOM изолирует стили от&nbsp;конфликтов.
                     </p>
                 </div>
 
