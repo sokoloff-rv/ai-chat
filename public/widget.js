@@ -510,6 +510,9 @@
                 }
                 processedLines.push(`<li>${olMatch[1]}</li>`);
             } else {
+                if (inList && line.trim() === '') {
+                    continue;
+                }
                 if (inList) {
                     processedLines.push(`</${listType}>`);
                     inList = false;
