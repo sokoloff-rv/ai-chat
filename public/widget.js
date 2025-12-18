@@ -45,7 +45,7 @@
     if (savedSession) {
         try {
             const sessionData = JSON.parse(savedSession);
-            if (Date.now() - sessionData.timestamp < 24 * 60 * 60 * 1000) {
+            if (Date.now() - sessionData.timestamp < 30 * 24 * 60 * 60 * 1000) {
                 sessionId = sessionData.sessionId;
             } else {
                 localStorage.removeItem(storageKey);
@@ -596,6 +596,11 @@
                     message: message,
                 }),
             });
+
+            localStorage.setItem(storageKey, JSON.stringify({
+                sessionId: sessionId,
+                timestamp: Date.now(),
+            }));
 
             hideTypingIndicator();
             addMessage(response.message, 'assistant');
