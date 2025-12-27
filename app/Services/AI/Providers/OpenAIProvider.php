@@ -39,18 +39,25 @@ class OpenAIProvider implements AIProviderInterface
 
         $requestMessages = $this->prepareMessages($messages, $systemPrompt);
 
+        $payload = [
+            'model' => $this->model,
+            'messages' => $requestMessages,
+        ];
+
+        if ($this->isReasoningModel($this->model)) {
+            $payload['max_completion_tokens'] = $this->maxTokens;
+        } else {
+            $payload['max_tokens'] = $this->maxTokens;
+            $payload['temperature'] = $this->temperature;
+        }
+
         try {
             $response = Http::withHeaders([
                 'Authorization' => "Bearer {$this->apiKey}",
                 'Content-Type' => 'application/json',
             ])
                 ->timeout(30)
-                ->post("{$this->baseUrl}/chat/completions", [
-                    'model' => $this->model,
-                    'messages' => $requestMessages,
-                    'max_completion_tokens' => $this->maxTokens,
-                    'temperature' => $this->temperature,
-                ]);
+                ->post("{$this->baseUrl}/chat/completions", $payload);
 
             if ($response->failed()) {
                 $this->handleError($response);
@@ -83,6 +90,17 @@ class OpenAIProvider implements AIProviderInterface
                 $e
             );
         }
+    }
+
+    /**
+     * Проверяет, является ли модель "рассуждающей" (reasoning model).
+     *
+     * @param string $model
+     * @return bool
+     */
+    private function isReasoningModel(string $model): bool
+    {
+        return str_starts_with($model, 'o1-') || $model === 'gpt-5-mini';
     }
 
     /**
