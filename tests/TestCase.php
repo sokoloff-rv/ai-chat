@@ -9,16 +9,31 @@ abstract class TestCase extends BaseTestCase
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
-        $db = $_ENV['DB_DATABASE'] ?? $_SERVER['DB_DATABASE'] ?? null;
 
-        if ($db === null && function_exists('env')) {
-            $db = env('DB_DATABASE');
-        }
+        $testingDb = $_ENV['DB_DATABASE'] ?? $_SERVER['DB_DATABASE'] ?? getenv('DB_DATABASE');
+        $productionDb = self::getProductionDatabaseName();
 
-        if ($db === 'ai_chat') {
+        if ($productionDb && $testingDb === $productionDb) {
             throw new \RuntimeException(
-                "Tests aborted: configured to use production database."
+                sprintf("FATAL: Tests are configured to run against the production database '%s'. Aborting.", $testingDb)
             );
         }
+    }
+
+    protected static function getProductionDatabaseName(): ?string
+    {
+        $envPath = __DIR__ . '/../.env';
+
+        if (!file_exists($envPath)) {
+            return null;
+        }
+
+        $content = file_get_contents($envPath);
+
+        if (preg_match('/^DB_DATABASE\s*=\s*(.*)$/m', $content, $matches)) {
+            return trim(trim($matches[1]), '"\'');
+        }
+
+        return null;
     }
 }
