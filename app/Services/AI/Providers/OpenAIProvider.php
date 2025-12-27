@@ -56,7 +56,7 @@ class OpenAIProvider implements AIProviderInterface
                 'Authorization' => "Bearer {$this->apiKey}",
                 'Content-Type' => 'application/json',
             ])
-                ->timeout(30)
+                ->timeout(60)
                 ->post("{$this->baseUrl}/chat/completions", $payload);
 
             if ($response->failed()) {
