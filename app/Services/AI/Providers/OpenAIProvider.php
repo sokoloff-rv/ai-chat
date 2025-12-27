@@ -18,9 +18,9 @@ class OpenAIProvider implements AIProviderInterface
     public function __construct()
     {
         $this->apiKey = config('services.openai.api_key', '');
-        $this->model = config('services.openai.model', 'gpt-4o-mini');
+        $this->model = config('services.openai.model', 'gpt-5-mini');
         $this->baseUrl = config('services.openai.base_url', 'https://api.openai.com/v1');
-        $this->maxTokens = config('services.openai.max_tokens', 1000);
+        $this->maxTokens = config('services.openai.max_completion_tokens', 1000);
         $this->temperature = config('services.openai.temperature', 0.7);
     }
 
@@ -48,7 +48,7 @@ class OpenAIProvider implements AIProviderInterface
                 ->post("{$this->baseUrl}/chat/completions", [
                     'model' => $this->model,
                     'messages' => $requestMessages,
-                    'max_tokens' => $this->maxTokens,
+                    'max_completion_tokens' => $this->maxTokens,
                     'temperature' => $this->temperature,
                 ]);
 

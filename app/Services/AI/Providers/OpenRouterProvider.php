@@ -18,9 +18,9 @@ class OpenRouterProvider implements AIProviderInterface
     public function __construct()
     {
         $this->apiKey = config('services.openrouter.api_key', '');
-        $this->model = config('services.openrouter.model', 'openai/gpt-4o-mini');
+        $this->model = config('services.openrouter.model', 'openai/gpt-5-mini');
         $this->baseUrl = config('services.openrouter.base_url', 'https://openrouter.ai/api/v1');
-        $this->maxTokens = config('services.openrouter.max_tokens', 1000);
+        $this->maxTokens = config('services.openrouter.max_completion_tokens', 1000);
         $this->temperature = config('services.openrouter.temperature', 0.7);
     }
 
@@ -50,7 +50,7 @@ class OpenRouterProvider implements AIProviderInterface
                 ->post("{$this->baseUrl}/chat/completions", [
                     'model' => $this->model,
                     'messages' => $requestMessages,
-                    'max_tokens' => $this->maxTokens,
+                    'max_completion_tokens' => $this->maxTokens,
                     'temperature' => $this->temperature,
                 ]);
 
