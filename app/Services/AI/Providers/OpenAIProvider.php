@@ -100,7 +100,7 @@ class OpenAIProvider implements AIProviderInterface
      */
     private function isReasoningModel(string $model): bool
     {
-        return str_starts_with($model, 'o1-') || $model === 'gpt-5-mini';
+        return str_starts_with($model, 'o1-') || str_starts_with($model, 'gpt-5');
     }
 
     /**
