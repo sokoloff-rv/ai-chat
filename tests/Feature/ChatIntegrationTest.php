@@ -30,18 +30,18 @@ class ChatIntegrationTest extends TestCase
 
         $chat = Chat::where('name', 'Мой первый бот')->first();
 
-        $response = $this->getJson("/api/widget/{$chat->public_id}/config");
+        $response = $this->getJson("/widget/{$chat->public_id}/config");
         $response->assertStatus(200)
             ->assertJsonStructure(['name', 'welcome_message', 'allowed_domains']);
 
         $sessionResponse = $this->withHeaders([
             'Referer' => 'https://example.com/page',
-        ])->postJson("/api/widget/{$chat->public_id}/session");
+        ])->postJson("/widget/{$chat->public_id}/session");
 
         $sessionResponse->assertStatus(200);
         $sessionId = $sessionResponse->json('session_id');
 
-        $messageResponse = $this->postJson("/api/widget/{$chat->public_id}/message", [
+        $messageResponse = $this->postJson("/widget/{$chat->public_id}/message", [
             'session_id' => $sessionId,
             'message' => 'Привет, расскажи о товаре',
         ]);
@@ -49,7 +49,7 @@ class ChatIntegrationTest extends TestCase
         $messageResponse->assertStatus(200)
             ->assertJsonStructure(['message', 'message_id']);
 
-        $historyResponse = $this->getJson("/api/widget/{$chat->public_id}/history?session_id={$sessionId}");
+        $historyResponse = $this->getJson("/widget/{$chat->public_id}/history?session_id={$sessionId}");
         $historyResponse->assertStatus(200);
 
         $messages = $historyResponse->json('messages');
@@ -90,17 +90,17 @@ class ChatIntegrationTest extends TestCase
 
         $response = $this->withHeaders([
             'Referer' => 'https://allowed.com/page',
-        ])->postJson("/api/widget/{$chat->public_id}/session");
+        ])->postJson("/widget/{$chat->public_id}/session");
 
         $response->assertStatus(200);
 
         $response = $this->withHeaders([
             'Referer' => 'https://forbidden.com/page',
-        ])->postJson("/api/widget/{$chat->public_id}/session");
+        ])->postJson("/widget/{$chat->public_id}/session");
 
         $response->assertStatus(403);
 
-        $response = $this->postJson("/api/widget/{$chat->public_id}/session");
+        $response = $this->postJson("/widget/{$chat->public_id}/session");
         $response->assertStatus(403);
     }
 
@@ -109,24 +109,24 @@ class ChatIntegrationTest extends TestCase
         $user = User::factory()->create();
         $chat = Chat::factory()->create(['user_id' => $user->id]);
 
-        $session1Response = $this->postJson("/api/widget/{$chat->public_id}/session");
+        $session1Response = $this->postJson("/widget/{$chat->public_id}/session");
         $sessionId1 = $session1Response->json('session_id');
 
-        $this->postJson("/api/widget/{$chat->public_id}/message", [
+        $this->postJson("/widget/{$chat->public_id}/message", [
             'session_id' => $sessionId1,
             'message' => 'Посетитель 1',
         ]);
 
-        $session2Response = $this->postJson("/api/widget/{$chat->public_id}/session");
+        $session2Response = $this->postJson("/widget/{$chat->public_id}/session");
         $sessionId2 = $session2Response->json('session_id');
 
-        $this->postJson("/api/widget/{$chat->public_id}/message", [
+        $this->postJson("/widget/{$chat->public_id}/message", [
             'session_id' => $sessionId2,
             'message' => 'Посетитель 2',
         ]);
 
-        $history1 = $this->getJson("/api/widget/{$chat->public_id}/history?session_id={$sessionId1}");
-        $history2 = $this->getJson("/api/widget/{$chat->public_id}/history?session_id={$sessionId2}");
+        $history1 = $this->getJson("/widget/{$chat->public_id}/history?session_id={$sessionId1}");
+        $history2 = $this->getJson("/widget/{$chat->public_id}/history?session_id={$sessionId2}");
 
         $history1->assertStatus(200);
         $history2->assertStatus(200);

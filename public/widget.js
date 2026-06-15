@@ -391,7 +391,7 @@
     const chatTitle = shadow.getElementById('chatTitle');
 
     async function apiRequest(endpoint, options = {}) {
-        const url = `${apiBaseUrl}/api/widget/${chatId}${endpoint}`;
+        const url = `${apiBaseUrl}/widget/${chatId}${endpoint}`;
 
         const response = await fetch(url, {
             ...options,

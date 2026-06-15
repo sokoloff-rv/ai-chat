@@ -33,12 +33,12 @@ class SecurityTest extends TestCase
             'allowed_domains' => null,
         ]);
 
-        $sessionResponse = $this->postJson("/api/widget/{$chat->public_id}/session");
+        $sessionResponse = $this->postJson("/widget/{$chat->public_id}/session");
         $sessionId = $sessionResponse->json('session_id');
 
         $maliciousSessionId = "'; DROP TABLE visitors; --";
 
-        $response = $this->postJson("/api/widget/{$chat->public_id}/message", [
+        $response = $this->postJson("/widget/{$chat->public_id}/message", [
             'session_id' => $maliciousSessionId,
             'message' => 'Test',
         ]);
@@ -58,13 +58,13 @@ class SecurityTest extends TestCase
             'allowed_domains' => null,
         ]);
 
-        $sessionResponse = $this->postJson("/api/widget/{$chat->public_id}/session");
+        $sessionResponse = $this->postJson("/widget/{$chat->public_id}/session");
         $sessionResponse->assertStatus(200);
 
         $sessionId = $sessionResponse->json('session_id');
         $this->assertNotNull($sessionId);
 
-        $response = $this->postJson("/api/widget/{$chat->public_id}/message", [
+        $response = $this->postJson("/widget/{$chat->public_id}/message", [
             'session_id' => $sessionId,
             'message' => '<img src=x onerror=alert(1)>Hello<script>alert("XSS")</script>',
         ]);
@@ -90,7 +90,7 @@ class SecurityTest extends TestCase
             'name' => '<script>alert("XSS")</script>Honest Bot',
         ]);
 
-        $response = $this->getJson("/api/widget/{$chat->public_id}/config");
+        $response = $this->getJson("/widget/{$chat->public_id}/config");
 
         $response->assertStatus(200);
 
@@ -104,12 +104,12 @@ class SecurityTest extends TestCase
         $user = User::factory()->create();
         $chat = Chat::factory()->create(['user_id' => $user->id]);
 
-        $sessionResponse = $this->postJson("/api/widget/{$chat->public_id}/session");
+        $sessionResponse = $this->postJson("/widget/{$chat->public_id}/session");
         $sessionId = $sessionResponse->json('session_id');
 
         $longMessage = str_repeat('A', 2001);
 
-        $response = $this->postJson("/api/widget/{$chat->public_id}/message", [
+        $response = $this->postJson("/widget/{$chat->public_id}/message", [
             'session_id' => $sessionId,
             'message' => $longMessage,
         ]);

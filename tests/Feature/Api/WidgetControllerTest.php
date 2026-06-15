@@ -29,7 +29,7 @@ class WidgetControllerTest extends TestCase
 
     public function test_can_get_chat_config(): void
     {
-        $response = $this->getJson("/api/widget/{$this->chat->public_id}/config");
+        $response = $this->getJson("/widget/{$this->chat->public_id}/config");
 
         $response->assertStatus(200)
             ->assertJson([
@@ -39,7 +39,7 @@ class WidgetControllerTest extends TestCase
 
     public function test_returns_404_for_invalid_chat(): void
     {
-        $response = $this->getJson('/api/widget/invalid-id/config');
+        $response = $this->getJson('/widget/invalid-id/config');
 
         $response->assertStatus(404)
             ->assertJson([
@@ -49,7 +49,7 @@ class WidgetControllerTest extends TestCase
 
     public function test_can_start_session(): void
     {
-        $response = $this->postJson("/api/widget/{$this->chat->public_id}/session");
+        $response = $this->postJson("/widget/{$this->chat->public_id}/session");
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -62,10 +62,10 @@ class WidgetControllerTest extends TestCase
 
     public function test_can_send_message(): void
     {
-        $sessionResponse = $this->postJson("/api/widget/{$this->chat->public_id}/session");
+        $sessionResponse = $this->postJson("/widget/{$this->chat->public_id}/session");
         $sessionId = $sessionResponse->json('session_id');
 
-        $response = $this->postJson("/api/widget/{$this->chat->public_id}/message", [
+        $response = $this->postJson("/widget/{$this->chat->public_id}/message", [
             'session_id' => $sessionId,
             'message' => 'Привет!',
         ]);
@@ -81,15 +81,15 @@ class WidgetControllerTest extends TestCase
 
     public function test_can_get_history(): void
     {
-        $sessionResponse = $this->postJson("/api/widget/{$this->chat->public_id}/session");
+        $sessionResponse = $this->postJson("/widget/{$this->chat->public_id}/session");
         $sessionId = $sessionResponse->json('session_id');
 
-        $this->postJson("/api/widget/{$this->chat->public_id}/message", [
+        $this->postJson("/widget/{$this->chat->public_id}/message", [
             'session_id' => $sessionId,
             'message' => 'Привет!',
         ]);
 
-        $response = $this->getJson("/api/widget/{$this->chat->public_id}/history?session_id={$sessionId}");
+        $response = $this->getJson("/widget/{$this->chat->public_id}/history?session_id={$sessionId}");
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -103,10 +103,10 @@ class WidgetControllerTest extends TestCase
 
     public function test_validates_message_request(): void
     {
-        $sessionResponse = $this->postJson("/api/widget/{$this->chat->public_id}/session");
+        $sessionResponse = $this->postJson("/widget/{$this->chat->public_id}/session");
         $sessionId = $sessionResponse->json('session_id');
 
-        $response = $this->postJson("/api/widget/{$this->chat->public_id}/message", [
+        $response = $this->postJson("/widget/{$this->chat->public_id}/message", [
             'session_id' => $sessionId,
         ]);
 
@@ -115,7 +115,7 @@ class WidgetControllerTest extends TestCase
 
     public function test_returns_error_for_invalid_session(): void
     {
-        $response = $this->postJson("/api/widget/{$this->chat->public_id}/message", [
+        $response = $this->postJson("/widget/{$this->chat->public_id}/message", [
             'session_id' => 'invalid-session',
             'message' => 'Привет!',
         ]);
@@ -128,14 +128,14 @@ class WidgetControllerTest extends TestCase
         $this->chat->update(['allowed_domains' => "example.com\ntest.com"]);
 
         $response = $this->postJson(
-            "/api/widget/{$this->chat->public_id}/session",
+            "/widget/{$this->chat->public_id}/session",
             [],
             ['Referer' => 'https://example.com/page']
         );
         $response->assertStatus(200);
 
         $response = $this->postJson(
-            "/api/widget/{$this->chat->public_id}/session",
+            "/widget/{$this->chat->public_id}/session",
             [],
             ['Referer' => 'https://evil.com/page']
         );

@@ -34,30 +34,30 @@ class WidgetSecurityTest extends TestCase
         RateLimiter::clear('session:127.0.0.1');
 
         for ($i = 0; $i < 10; $i++) {
-            $response = $this->postJson("/api/widget/{$this->chat->public_id}/session");
+            $response = $this->postJson("/widget/{$this->chat->public_id}/session");
             $response->assertStatus(200);
         }
 
-        $response = $this->postJson("/api/widget/{$this->chat->public_id}/session");
+        $response = $this->postJson("/widget/{$this->chat->public_id}/session");
         $response->assertStatus(429);
     }
 
     public function test_rate_limiting_prevents_too_many_messages(): void
     {
-        $sessionResponse = $this->postJson("/api/widget/{$this->chat->public_id}/session");
+        $sessionResponse = $this->postJson("/widget/{$this->chat->public_id}/session");
         $sessionId = $sessionResponse->json('session_id');
 
         RateLimiter::clear('message:' . $sessionId);
 
         for ($i = 0; $i < 20; $i++) {
-            $response = $this->postJson("/api/widget/{$this->chat->public_id}/message", [
+            $response = $this->postJson("/widget/{$this->chat->public_id}/message", [
                 'session_id' => $sessionId,
                 'message' => "Сообщение {$i}",
             ]);
             $response->assertStatus(200);
         }
 
-        $response = $this->postJson("/api/widget/{$this->chat->public_id}/message", [
+        $response = $this->postJson("/widget/{$this->chat->public_id}/message", [
             'session_id' => $sessionId,
             'message' => 'Слишком много сообщений',
         ]);
@@ -66,10 +66,10 @@ class WidgetSecurityTest extends TestCase
 
     public function test_sanitizes_xss_in_message(): void
     {
-        $sessionResponse = $this->postJson("/api/widget/{$this->chat->public_id}/session");
+        $sessionResponse = $this->postJson("/widget/{$this->chat->public_id}/session");
         $sessionId = $sessionResponse->json('session_id');
 
-        $response = $this->postJson("/api/widget/{$this->chat->public_id}/message", [
+        $response = $this->postJson("/widget/{$this->chat->public_id}/message", [
             'session_id' => $sessionId,
             'message' => '<script>alert("XSS")</script>Привет',
         ]);
@@ -84,7 +84,7 @@ class WidgetSecurityTest extends TestCase
 
     public function test_validates_uuid_session_id(): void
     {
-        $response = $this->postJson("/api/widget/{$this->chat->public_id}/message", [
+        $response = $this->postJson("/widget/{$this->chat->public_id}/message", [
             'session_id' => 'not-a-valid-uuid',
             'message' => 'Привет',
         ]);
@@ -94,10 +94,10 @@ class WidgetSecurityTest extends TestCase
 
     public function test_validates_message_length(): void
     {
-        $sessionResponse = $this->postJson("/api/widget/{$this->chat->public_id}/session");
+        $sessionResponse = $this->postJson("/widget/{$this->chat->public_id}/session");
         $sessionId = $sessionResponse->json('session_id');
 
-        $response = $this->postJson("/api/widget/{$this->chat->public_id}/message", [
+        $response = $this->postJson("/widget/{$this->chat->public_id}/message", [
             'session_id' => $sessionId,
             'message' => str_repeat('a', 2001),
         ]);
@@ -111,7 +111,7 @@ class WidgetSecurityTest extends TestCase
 
         $response = $this->withHeaders([
             'User-Agent' => $longUserAgent,
-        ])->postJson("/api/widget/{$this->chat->public_id}/session");
+        ])->postJson("/widget/{$this->chat->public_id}/session");
 
         $response->assertStatus(200);
 
@@ -125,7 +125,7 @@ class WidgetSecurityTest extends TestCase
 
         $response = $this->withHeaders([
             'Referer' => $longReferrer,
-        ])->postJson("/api/widget/{$this->chat->public_id}/session");
+        ])->postJson("/widget/{$this->chat->public_id}/session");
 
         $response->assertStatus(200);
 
@@ -138,7 +138,7 @@ class WidgetSecurityTest extends TestCase
         $this->chat->update(['allowed_domains' => ['example.com']]);
 
         $response = $this->postJson(
-            "/api/widget/{$this->chat->public_id}/session",
+            "/widget/{$this->chat->public_id}/session",
             [],
             ['Referer' => 'https://sub.example.com/page']
         );
@@ -151,7 +151,7 @@ class WidgetSecurityTest extends TestCase
         $this->chat->update(['allowed_domains' => ['example.com']]);
 
         $response = $this->postJson(
-            "/api/widget/{$this->chat->public_id}/session",
+            "/widget/{$this->chat->public_id}/session",
             [],
             ['Referer' => 'https://evil.com/page']
         );
@@ -163,7 +163,7 @@ class WidgetSecurityTest extends TestCase
     {
         $this->chat->update(['allowed_domains' => ['example.com']]);
 
-        $response = $this->postJson("/api/widget/{$this->chat->public_id}/session");
+        $response = $this->postJson("/widget/{$this->chat->public_id}/session");
 
         $response->assertStatus(403);
     }
@@ -172,7 +172,7 @@ class WidgetSecurityTest extends TestCase
     {
         $this->chat->update(['name' => '<script>alert("XSS")</script>Bot']);
 
-        $response = $this->getJson("/api/widget/{$this->chat->public_id}/config");
+        $response = $this->getJson("/widget/{$this->chat->public_id}/config");
 
         $response->assertStatus(200);
         $name = $response->json('name');
@@ -187,21 +187,21 @@ class WidgetSecurityTest extends TestCase
             ->where('id', $this->chat->id)
             ->update(['allowed_domains' => "example.com\nlegacy.com"]);
 
-        $response = $this->getJson("/api/widget/{$this->chat->public_id}/config");
+        $response = $this->getJson("/widget/{$this->chat->public_id}/config");
         $response->assertStatus(200)
             ->assertJson([
                 'allowed_domains' => ['example.com', 'legacy.com'],
             ]);
 
         $response = $this->postJson(
-            "/api/widget/{$this->chat->public_id}/session",
+            "/widget/{$this->chat->public_id}/session",
             [],
             ['Referer' => 'https://legacy.com/page']
         );
         $response->assertStatus(200);
 
         $response = $this->postJson(
-            "/api/widget/{$this->chat->public_id}/session",
+            "/widget/{$this->chat->public_id}/session",
             [],
             ['Referer' => 'https://evil.com/page']
         );
@@ -215,10 +215,10 @@ class WidgetSecurityTest extends TestCase
                 ->andThrow(new \Exception('System database connection failed'));
         });
 
-        $sessionResponse = $this->postJson("/api/widget/{$this->chat->public_id}/session");
+        $sessionResponse = $this->postJson("/widget/{$this->chat->public_id}/session");
         $sessionId = $sessionResponse->json('session_id');
 
-        $response = $this->postJson("/api/widget/{$this->chat->public_id}/message", [
+        $response = $this->postJson("/widget/{$this->chat->public_id}/message", [
             'session_id' => $sessionId,
             'message' => 'Hello',
         ]);
